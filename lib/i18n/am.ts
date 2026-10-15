@@ -1,0 +1,14 @@
+const am = {
+  nav: { home: "ዋና", profile: "መገለጫ", projects: "ፕሮጀክቶች", skills: "ክህሎቶች", blog: "ብሎግ", contact: "ያግኙን", admin: "አስተዳድር" },
+  common: { loading: "በመጫን ላይ", empty: "እስካሁን ምንም የለም", error: "ችግር ተከስቷል", save: "አስቀምጥ", cancel: "ሰርዝ", delete: "ሰርዝ", edit: "አስተካክል", create: "ፍጠር", publish: "አሳይ", unpublish: "KAሳይ አቁም", featured: "ተመራጭ", preview: "ቅድመ እይታ", submit: "አስገባ", search: "ፈልግ", filter: "አጣራ", all: "ሁሉም", back: "ተመለስ", view: "እይ", readMore: "ተጨማሪ ያንብቡ", noData: "መረጃ የለም", confirmDelete: "ይህን ለመሰረዝ እርግጠኛ ነዎት?", success: "በተሳካ ሁኔታ ተቀመጠ", failed: "አልተሳካም", logout: "ውጣ", login: "ግባ", dashboard: "ዳሽቦርድ", language: "ቋንቋ", welcome: "እንኳን ደህና መጣህ" },
+  hero: { title: "ሲኒማዊ ታሪኮችን በእያንዳንዱ ፍሬም መንደፍ", subtitle: "ለንግድ ማስታወቂያዎች፣ ሙዚቃ ቪዲዮዎች፣ ዶክመንታሪዎች እና ማህበራዊ ይዘት ሲኒማዊ ይዘት የማቀርብ ሙያዊ ቪዲዮ ኤዲተር እና ሞሽን ዲዛይነር ነኝ።", viewWork: "ስራዎቼን ይመልከቱ", contactMe: "ያግኙኝ", showreel: "የስራ ቪዲዮ" },
+  home: { featuredProjects: "ተመራጭ ፕሮጀክቶች", recentPosts: "የቅርብ ጽሁፎች", skills: "ክህሎቶች እና መሳሪያዎች", about: "ስለ እኔ", contactCta: "የማይረሳ ስራ እንፍጠር", contactCtaSub: "ለ träልFormat ፕሮጀክቶች፣ ንግድ ስራ እና ትብብር ይገኛሉ።" },
+  profile: { title: "መገለጫ", experience: "ዓመታት ልምድ", services: "አገልግሎቶች", tools: "መሳሪያዎች እና ሶፍትዌሮች", philosophy: "የፍጠራ አቀራረብ", achievements: " nas([])", social: "ይገናኙ", hire: "እንተባበር" },
+  projects: { title: "ፕሮጀክቶች", subtitle: "ሲኒማዊ ፕሮጀክቶች ስብስብ", detail: "የፕሮጀክት ዝርዝር", category: "ምድብ", tools: "የተጠቀሙ መሳሪያዎች", date: "ቀን", client: "ደንበኛ", video: "ቪዲዮ ይመልከቱ", noProjects: "ምንም ፕሮጀክት አልተወሰነም" },
+  skillsPage: { title: "ክህሎቶች እና መሳሪያዎች", subtitle: "የፍጠራ እና ቴክኒካል ችሎታዎች" },
+  blog: { title: "ብሎግ", subtitle: "ስለ ኤDIIT፣ ሞሽን እና የታሪክ ስራ", read: "ጽሁፉን ያንብቡ", related: "ተዛማጅ ጽሁፎች", empty: "እስካሁን ምንም ጽሁፍ የለም", searchPlaceholder: "ጽሁፎችን ይፈልጉ", minRead: "ደቂቃ ንባብ" },
+  contact: { title: "ያግኙን", subtitle: "ስለ ፕሮጀክትዎ ይንገሩኝ", name: "ስም", email: "ኢሜይል", subject: "ርዕስ", message: "መልዕክት", send: "መልዕክት ላክ", info: "የመገናኛ መረጃ", successMsg: "መልዕክት በተሳካ ሁኔታ ተልኳል!", errorMsg: "መልዕክት መላክ አልተሳካም" },
+  admin: { overview: "አጠቃላይ እይታ", profile: "መገለጫ", homepage: "ዋና ገጽ", projects: "ፕሮጀክቶች", skills: "ክህሎቶች", blog: "ብሎግ", messages: "መልዕክቶች", settings: "ቅንብሮች", loginTitle: "የአስተዳዳሪ መግቢያ", loginBtn: "ግባ", email: "ኢሜይል", password: "የይለፍ ቃል", invalidCreds: "የተሳሳተ መረጃ", configError: "አድሚን በትክክል አልተዋቀረም", stats: { projects: "Published Projects", posts: "Blog Posts", skills: "Skills", messages: "Messages", unread: "Unread Messages" } },
+  footer: { rights: "መብቱ የተጠበቀ ነው" },
+};
+export default am;

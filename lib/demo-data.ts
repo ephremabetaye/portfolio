@@ -1,0 +1,74 @@
+export const demoProfile = {
+  _id: "demo",
+  name: "Amanuel Bekele",
+  title: "Senior Video Editor & Motion Designer",
+  bio: { en: "I craft cinematic stories for brands, artists, and creators. Specializing in commercials, music videos, documentaries, and social content.", am: "" },
+  image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800",
+  resumeUrl: "",
+  yearsExperience: 7,
+  services: ["Commercial Editing", "Music Video Editing", "Color Grading", "Motion Graphics", "Social Content"],
+  tools: ["Adobe Premiere Pro", "After Effects", "DaVinci Resolve", "Photoshop", "Audition"],
+  skills: [],
+  achievements: ["50+ brand projects", "Featured on Vimeo Staff Pick", "Music video for top-charting artist"],
+  philosophy: { en: "Every frame should serve the story. Editing is rhythm, emotion, and intention.", am: "" },
+  social: { instagram: "https://instagram.com", youtube: "https://youtube.com", vimeo: "https://vimeo.com", linkedin: "https://linkedin.com", email: "hello@example.com" },
+  contactEmail: "hello@example.com",
+  phone: "+251 900 000 000",
+  location: "Addis Ababa, Ethiopia",
+};
+
+export const demoSettings = {
+  _id: "demo",
+  siteName: "CineCut Portfolio",
+  logoText: "CineCut",
+  accentColor: "#7c5cff",
+  defaultLanguage: "en",
+  heroHeading: { en: "Crafting cinematic stories frame by frame", am: "" },
+  heroSubtitle: { en: "I am a professional video editor and motion designer delivering commercials, music videos, documentaries, and social content that moves audiences.", am: "" },
+  introText: { en: "From first cut to final polish, I shape raw footage into compelling narratives.", am: "" },
+  primaryButtonText: { en: "View My Work", am: "" },
+  primaryButtonLink: "/projects",
+  secondaryButtonText: { en: "Contact Me", am: "" },
+  secondaryButtonLink: "/contact",
+  showreelUrl: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  aboutHeading: { en: "About", am: "" },
+  aboutText: { en: "I partner with brands, agencies, and artists to deliver edits that elevate their message.", am: "" },
+  contactCtaHeading: { en: "Let's create something unforgettable", am: "" },
+  contactCtaText: { en: "Available for freelance projects, commercial work, and collaborations.", am: "" },
+  footerText: { en: "Crafting cinematic stories.", am: "" },
+  seoTitle: "Amanuel Bekele — Video Editor",
+  seoDescription: "Portfolio of a professional video editor.",
+  contactEmail: "hello@example.com",
+  social: { instagram: "https://instagram.com", youtube: "https://youtube.com", vimeo: "https://vimeo.com", linkedin: "https://linkedin.com", email: "hello@example.com" },
+  featuredProjectIds: [],
+};
+
+export const demoProjects = [
+  { _id: "p1", title: { en: "Neon Brand Launch", am: "" }, slug: "neon-brand-launch", description: { en: "High-energy commercial spot for a tech startup launch, featuring dynamic transitions and bold color.", am: "" }, category: "Commercial", client: "NovaTech", tools: ["Premiere Pro", "After Effects"], projectDate: "2025-11-10T00:00:00.000Z", thumbnail: "https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=1200", featured: true, published: true, order: 1 },
+  { _id: "p2", title: { en: "Echoes — Music Video", am: "" }, slug: "echoes-music-video", description: { en: "Cinematic music video with narrative storytelling and stylized lighting.", am: "" }, category: "Music Videos", client: "Echoes Band", tools: ["Premiere Pro", "DaVinci Resolve"], projectDate: "2025-09-02T00:00:00.000Z", thumbnail: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=1200", featured: true, published: true, order: 2 },
+  { _id: "p3", title: { en: "Summit — Documentary Short", am: "" }, slug: "summit-doc-short", description: { en: "Short documentary following climbers preparing for a summit attempt.", am: "" }, category: "Documentary", client: "Summit Films", tools: ["Premiere Pro", "Audition"], projectDate: "2025-06-15T00:00:00.000Z", thumbnail: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200", featured: false, published: true, order: 3 },
+  { _id: "p4", title: { en: "Threads Social Campaign", am: "" }, slug: "threads-social-campaign", description: { en: "Series of short-form vertical edits for a fashion brand social campaign.", am: "" }, category: "Social Media", client: "Threads", tools: ["Premiere Pro", "Photoshop"], projectDate: "2025-04-20T00:00:00.000Z", thumbnail: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=1200", featured: false, published: true, order: 4 },
+  { _id: "p5", title: { en: "Kinetic Titles Pack", am: "" }, slug: "kinetic-titles-pack", description: { en: "Motion graphics title pack for broadcast and digital use.", am: "" }, category: "Motion Graphics", client: "Self", tools: ["After Effects"], projectDate: "2025-02-01T00:00:00.000Z", thumbnail: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=1200", featured: false, published: true, order: 5 },
+  { _id: "p6", title: { en: "Silent River — Trailer", am: "" }, slug: "silent-river-trailer", description: { en: "Cinematic trailer edit with custom sound design and color grade.", am: "" }, category: "Cinematic", client: "River Studios", tools: ["Premiere Pro", "DaVinci Resolve", "Audition"], projectDate: "2024-12-12T00:00:00.000Z", thumbnail: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?w=1200", featured: true, published: true, order: 6 },
+];
+
+export const demoSkills = [
+  { _id: "s1", name: "Adobe Premiere Pro", category: "Editing", description: { en: "Professional non-linear editing", am: "" }, proficiency: 95, order: 1 },
+  { _id: "s2", name: "Adobe After Effects", category: "Motion Graphics", description: { en: "Motion graphics and compositing", am: "" }, proficiency: 90, order: 2 },
+  { _id: "s3", name: "DaVinci Resolve", category: "Color", description: { en: "Color grading and finishing", am: "" }, proficiency: 85, order: 3 },
+  { _id: "s4", name: "Adobe Photoshop", category: "Design", description: { en: "Visual design and assets", am: "" }, proficiency: 80, order: 4 },
+  { _id: "s5", name: "Adobe Audition", category: "Audio", description: { en: "Audio editing and mixing", am: "" }, proficiency: 75, order: 5 },
+  { _id: "s6", name: "Color Grading", category: "Post-Production", description: { en: "Cinematic color work", am: "" }, proficiency: 90, order: 6 },
+  { _id: "s7", name: "Sound Design", category: "Audio", description: { en: "Atmosphere and Foley", am: "" }, proficiency: 80, order: 7 },
+  { _id: "s8", name: "Motion Graphics", category: "Motion", description: { en: "Kinetic typography and animation", am: "" }, proficiency: 85, order: 8 },
+  { _id: "s9", name: "Storytelling", category: "Creative", description: { en: "Narrative structure", am: "" }, proficiency: 95, order: 9 },
+  { _id: "s10", name: "Social Media Editing", category: "Social", description: { en: "Short-form platform content", am: "" }, proficiency: 90, order: 10 },
+];
+
+export const demoPosts = [
+  { _id: "b1", title: { en: "The Art of the Invisible Cut", am: "" }, slug: "art-of-invisible-cut", excerpt: { en: "How seamless transitions keep viewers immersed.", am: "" }, content: { en: "Great editing is editing you never notice. In this post we explore rhythm, pacing, and match cuts.", am: "" }, featuredImage: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=1200", author: "Amanuel Bekele", categories: ["Editing"], tags: ["editing", "craft"], published: true, publishedAt: new Date().toISOString() },
+  { _id: "b2", title: { en: "Color Grading for Mood", am: "" }, slug: "color-grading-for-mood", excerpt: { en: "Using color to shape emotion and narrative.", am: "" }, content: { en: "Color is storytelling. Learn how to approach grading with intention.", am: "" }, featuredImage: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=1200", author: "Amanuel Bekele", categories: ["Color"], tags: ["color", "grading"], published: true, publishedAt: new Date().toISOString() },
+  { _id: "b3", title: { en: "Editing Short-Form Social Content", am: "" }, slug: "editing-short-form-social", excerpt: { en: "Tips for vertical video that hooks in the first second.", am: "" }, content: { en: "Short-form is about impact. Here are principles that keep retention high.", am: "" }, featuredImage: "https://images.unsplash.com/photo-1611162617223-7d3f0d1e9c3b?w=1200", author: "Amanuel Bekele", categories: ["Social"], tags: ["social", "short-form"], published: true, publishedAt: new Date().toISOString() },
+];
+
+export const demoMessages = [];
