@@ -5,6 +5,7 @@ import { Search } from "lucide-react";
 import { useLanguage, bi } from "@/components/providers/language-provider";
 import Image from "next/image";
 import { readingTime } from "@/lib/utilities";
+import { resolveImageUrl } from "@/lib/media";
 
 export default function BlogPage() {
   const { t, lang } = useLanguage();
@@ -32,10 +33,12 @@ export default function BlogPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filtered.slice(0, visible).map(p => (
+        {filtered.slice(0, visible).map(p => {
+          const img = resolveImageUrl(p.featuredImage);
+          return (
           <Link key={p._id} href={`/blog/${p.slug}`} className="group glass-card overflow-hidden hover:-translate-y-1 transition">
             <div className="relative aspect-video overflow-hidden bg-black">
-              {p.featuredImage && <Image src={p.featuredImage} alt={bi(p.title,lang)} fill className="object-cover group-hover:scale-105 transition duration-500" sizes="(max-width:768px)100vw,33vw" />}
+              {img && <Image src={img} alt={bi(p.title,lang)} fill className="object-cover group-hover:scale-105 transition duration-500" sizes="(max-width:768px)100vw,33vw" />}
             </div>
             <div className="p-5">
               <div className="text-xs text-[color:var(--accent)]">{(p.categories||[]).join(" · ")}</div>
@@ -47,7 +50,8 @@ export default function BlogPage() {
               </div>
             </div>
           </Link>
-        ))}
+          );
+        })}
       </div>
 
       {filtered.length > visible && (

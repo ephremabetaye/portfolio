@@ -1,11 +1,16 @@
 "use client";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, X } from "lucide-react";
+import MediaUrlField from "@/components/admin/MediaUrlField";
+import SkillIcon from "@/components/skills/SkillIcon";
+import { mediaLinkError } from "@/lib/media";
+import { SKILL_ICONS, SKILL_ICON_NAMES, humanizeIconName } from "@/lib/skill-icons";
 
 export default function AdminSkills() {
   const [items, setItems] = useState<any[]>([]);
   const [modal, setModal] = useState<any>(null);
+  const [orig, setOrig] = useState<any>({}); // original icon link (legacy values may be kept untouched)
   const [saving, setSaving] = useState(false);
 
   async function load() {
@@ -14,10 +19,12 @@ export default function AdminSkills() {
   }
   useEffect(() => { load(); }, []);
 
-  function newItem() { setModal({ name: "", category: "Editing", description: { en: "", am: "" }, proficiency: 0, icon: "", order: 0 }); }
-  function editItem(it: any) { setModal({ ...it }); }
+  function newItem() { setOrig({}); setModal({ name: "", category: "Editing", description: { en: "", am: "" }, proficiency: 0, icon: "", iconName: "", order: 0 }); }
+  function editItem(it: any) { setOrig({ icon: it.icon || "" }); setModal({ ...it }); }
 
   async function save() {
+    const iconError = mediaLinkError("image", modal.icon, orig.icon);
+    if (iconError) return toast.error(iconError);
     setSaving(true);
     try {
       const body = { ...modal };
@@ -45,12 +52,15 @@ export default function AdminSkills() {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         {items.map(it => (
-          <div key={it._id} className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4 flex items-center justify-between">
-            <div>
-              <div className="font-semibold">{it.name}</div>
-              <div className="text-xs text-[color:var(--muted)]">{it.category} · {it.proficiency}%</div>
+          <div key={it._id} className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface)] p-4 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3 min-w-0">
+              <SkillIcon skill={it} size={40} />
+              <div className="min-w-0">
+                <div className="font-semibold truncate">{it.name}</div>
+                <div className="text-xs text-[color:var(--muted)]">{it.category} · {it.proficiency}%</div>
+              </div>
             </div>
-            <div className="flex gap-1">
+            <div className="flex gap-1 shrink-0">
               <button onClick={()=>editItem(it)} className="p-1.5 rounded-lg hover:bg-white/10"><Pencil size={14}/></button>
               <button onClick={()=>del(it._id)} className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-400"><Trash2 size={14}/></button>
             </div>
@@ -67,9 +77,54 @@ export default function AdminSkills() {
                 <Field label="Name" value={modal.name || ""} onChange={(v: any)=>setM("name", v)} />
                 <Field label="Category" value={modal.category || ""} onChange={(v: any)=>setM("category", v)} />
                 <Field label="Proficiency (0-100)" value={modal.proficiency ?? 0} onChange={(v: any)=>setM("proficiency", Number(v))} type="number" />
-                <Field label="Icon (optional)" value={modal.icon || ""} onChange={(v: any)=>setM("icon", v)} />
                 <Field label="Order" value={modal.order ?? 0} onChange={(v: any)=>setM("order", Number(v))} type="number" />
               </div>
+
+              <div className="rounded-xl border border-[color:var(--border)] p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs text-[color:var(--muted)]">Icon — pick a built-in icon, or paste an image/logo link below</div>
+                  <div className="flex items-center gap-2">
+                    <SkillIcon skill={modal} size={40} />
+                    <span className="text-xs text-[color:var(--muted)]">
+                      {modal.icon?.trim() ? "Custom image" : modal.iconName ? humanizeIconName(modal.iconName) : "Letter"}
+                    </span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-8 sm:grid-cols-12 gap-1.5 max-h-44 overflow-auto pr-1">
+                  <button
+                    type="button"
+                    title="No built-in icon"
+                    onClick={()=>setM("iconName", "")}
+                    className={`aspect-square rounded-lg flex items-center justify-center border transition ${!modal.iconName ? "bg-[color:var(--accent)]/25 border-[color:var(--accent)]" : "border-[color:var(--border)] hover:bg-white/10"}`}
+                  >
+                    <X size={14} />
+                  </button>
+                  {SKILL_ICON_NAMES.map(name => {
+                    const Icon = SKILL_ICONS[name];
+                    const active = modal.iconName === name;
+                    return (
+                      <button
+                        key={name}
+                        type="button"
+                        title={humanizeIconName(name)}
+                        onClick={()=>setM("iconName", active ? "" : name)}
+                        className={`aspect-square rounded-lg flex items-center justify-center border transition ${active ? "bg-[color:var(--accent)]/25 border-[color:var(--accent)] text-[color:var(--accent-2)]" : "border-[color:var(--border)] hover:bg-white/10"}`}
+                      >
+                        <Icon size={15} />
+                      </button>
+                    );
+                  })}
+                </div>
+                <MediaUrlField
+                  label="Icon image / platform logo (optional)"
+                  kind="image"
+                  value={modal.icon || ""}
+                  onChange={(v: string)=>setM("icon", v)}
+                  original={orig.icon}
+                  hint="Paste a Google Cloud / Drive image link (e.g. an Adobe, YouTube, or Instagram logo image). Takes priority over the built-in icon."
+                />
+              </div>
+
               <LangField label="Description (EN)" value={modal.description?.en || ""} onChange={(v: any)=>setM("description", { ...modal.description, en: v })} />
               <LangField label="Description (AM)" value={modal.description?.am || ""} onChange={(v: any)=>setM("description", { ...modal.description, am: v })} />
             </div>

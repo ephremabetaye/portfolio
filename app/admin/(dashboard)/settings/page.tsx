@@ -2,14 +2,20 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Save } from "lucide-react";
+import MediaUrlField from "@/components/admin/MediaUrlField";
+import { mediaLinkError } from "@/lib/media";
 
 export default function AdminSettings() {
   const [s, setS] = useState<any>({});
   const [projects, setProjects] = useState<any[]>([]);
+  const [orig, setOrig] = useState<any>({}); // original media links (legacy values may be kept untouched)
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch("/api/settings").then(r => r.json()).then(d => setS(d.data || {})).catch(()=>{});
+    fetch("/api/settings").then(r => r.json()).then(d => {
+      setS(d.data || {});
+      setOrig({ showreelUrl: d.data?.showreelUrl || "" });
+    }).catch(()=>{});
     fetch("/api/projects?all=1").then(r => r.json()).then(d => setProjects(d.data || [])).catch(()=>{});
   }, []);
 
@@ -17,6 +23,8 @@ export default function AdminSettings() {
   function setLang(k: string, lang: string, v: string) { setS((p: any) => ({ ...p, [k]: { ...(p[k] || {}), [lang]: v } })); }
 
   async function save() {
+    const reelError = mediaLinkError("video", s.showreelUrl, orig.showreelUrl);
+    if (reelError) return toast.error(reelError);
     setSaving(true);
     try {
       const r = await fetch("/api/settings", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(s) });
@@ -43,7 +51,14 @@ export default function AdminSettings() {
             <Input label="Accent Color" value={s.accentColor || "#7c5cff"} onChange={(v: any)=>set("accentColor",v)} />
             <Input label="Default Language" value={s.defaultLanguage || "en"} onChange={(v: any)=>set("defaultLanguage",v)} />
             <Input label="Contact Email" value={s.contactEmail || ""} onChange={(v: any)=>set("contactEmail",v)} />
-            <Input label="Showreel URL" value={s.showreelUrl || ""} onChange={(v: any)=>set("showreelUrl",v)} />
+            <MediaUrlField
+              label="Showreel (link)"
+              kind="video"
+              value={s.showreelUrl || ""}
+              onChange={(v: string)=>set("showreelUrl",v)}
+              original={orig.showreelUrl}
+              hint="Paste a YouTube link or a Google Cloud / Google Drive video link."
+            />
             <Input label="SEO Title" value={s.seoTitle || ""} onChange={(v: any)=>set("seoTitle",v)} full />
             <Input label="SEO Description" value={s.seoDescription || ""} onChange={(v: any)=>set("seoDescription",v)} full />
           </Grid>
@@ -101,6 +116,20 @@ export default function AdminSettings() {
             {["instagram","youtube","vimeo","linkedin","twitter","whatsapp","email","website"].map(k => (
               <Input key={k} label={k} value={s.social?.[k] || ""} onChange={(v: any)=>set("social", { ...s.social, [k]: v })} />
             ))}
+          </Grid>
+        </Section>
+
+        <Section title="EmailJS (contact form email)">
+          <p className="text-xs text-[color:var(--muted)] leading-relaxed">
+            Every contact message is always saved in <b>Admin → Messages</b>. To also receive it by email, create a free account at
+            emailjs.com, add an email service and a template (template variables: {"{{from_name}}"}, {"{{from_email}}"}, {"{{reply_to}}"}, {"{{subject}}"}, {"{{message}}"}, {"{{to_email}}"}),
+            then paste the IDs below.
+          </p>
+          <Grid>
+            <Input label="Service ID" value={s.emailjs?.serviceId || ""} onChange={(v: any)=>set("emailjs", { ...s.emailjs, serviceId: v })} />
+            <Input label="Template ID" value={s.emailjs?.templateId || ""} onChange={(v: any)=>set("emailjs", { ...s.emailjs, templateId: v })} />
+            <Input label="Public Key" value={s.emailjs?.publicKey || ""} onChange={(v: any)=>set("emailjs", { ...s.emailjs, publicKey: v })} />
+            <Input label="Send To Email" value={s.emailjs?.toEmail || ""} onChange={(v: any)=>set("emailjs", { ...s.emailjs, toEmail: v })} />
           </Grid>
         </Section>
 

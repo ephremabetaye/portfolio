@@ -27,6 +27,15 @@ const SiteSettingsSchema = new mongoose.Schema({
   footerText: { type: LangText, default: {} },
   social: { type: Object, default: {} },
   contactEmail: { type: String, default: "" },
+  emailjs: {
+    type: new mongoose.Schema({
+      serviceId: { type: String, default: "" },
+      templateId: { type: String, default: "" },
+      publicKey: { type: String, default: "" },
+      toEmail: { type: String, default: "" },
+    }, { _id: false }),
+    default: {},
+  },
 }, { timestamps: true });
 
 export const SiteSettings = mongoose.models.SiteSettings || mongoose.model("SiteSettings", SiteSettingsSchema);

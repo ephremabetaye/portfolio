@@ -1,7 +1,8 @@
 import { connectDB } from "@/lib/mongodb";
 import { Project } from "@/models/Project";
 import { getAdminSession } from "@/lib/auth";
-import { jsonError, jsonOk, slugify, safeUrl } from "@/lib/utilities";
+import { jsonError, jsonOk, slugify } from "@/lib/utilities";
+import { enforceMediaField } from "@/lib/media";
 import { getDemoStore, isDemoMode, nextDemoId, persistDemoStore } from "@/lib/demo-store";
 
 export async function GET(req: Request) {
@@ -46,8 +47,12 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     if (!body.slug && body.title?.en) body.slug = slugify(body.title.en);
-    body.thumbnail = safeUrl(body.thumbnail);
-    body.videoUrl = safeUrl(body.videoUrl);
+    // Media is link-only: images from Google Cloud/Drive (or a YouTube thumbnail),
+    // videos from YouTube or Google Cloud/Drive.
+    const imageCheck = enforceMediaField("image", body, "thumbnail");
+    if (!imageCheck.ok) return jsonError(imageCheck.error, 400);
+    const videoCheck = enforceMediaField("video", body, "videoUrl");
+    if (!videoCheck.ok) return jsonError(videoCheck.error, 400);
     if (isDemoMode()) {
       const store = getDemoStore();
       const item = { ...body, _id: nextDemoId("p"), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() };

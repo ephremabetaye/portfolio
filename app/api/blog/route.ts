@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/mongodb";
 import { BlogPost } from "@/models/BlogPost";
 import { getAdminSession } from "@/lib/auth";
 import { jsonError, jsonOk, slugify } from "@/lib/utilities";
+import { enforceMediaField } from "@/lib/media";
 import { getDemoStore, isDemoMode, nextDemoId, persistDemoStore } from "@/lib/demo-store";
 
 export async function GET(req: Request) {
@@ -45,6 +46,9 @@ export async function POST(req: Request) {
     const body = await req.json();
     if (!body.slug && body.title?.en) body.slug = slugify(body.title.en);
     if (body.published && !body.publishedAt) body.publishedAt = new Date();
+    // Featured images are link-only: Google Cloud/Drive links, or a YouTube thumbnail.
+    const imageCheck = enforceMediaField("image", body, "featuredImage");
+    if (!imageCheck.ok) return jsonError(imageCheck.error, 400);
     if (isDemoMode()) {
       const store = getDemoStore();
       const item = { ...body, _id: nextDemoId("b"), createdAt: new Date().toISOString() };

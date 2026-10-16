@@ -12,7 +12,7 @@ async function run() {
   if (!profile) {
     await Profile.create({
       name: "Amanuel Bekele",
-      title: "Senior Video Editor & Motion Designer",
+      title: "Senior Video Editor & Graphic Designer",
       bio: { en: "I craft cinematic stories for brands, artists, and creators. Specializing in commercials, music videos, documentaries, and social content.", am: "" },
       image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=800",
       resumeUrl: "",
@@ -37,7 +37,7 @@ async function run() {
       accentColor: "#7c5cff",
       defaultLanguage: "en",
       heroHeading: { en: "Crafting cinematic stories frame by frame", am: "" },
-      heroSubtitle: { en: "I am a professional video editor and motion designer delivering commercials, music videos, documentaries, and social content that moves audiences.", am: "" },
+      heroSubtitle: { en: "I am a professional video editor and Graphic Designer delivering commercials, music videos, documentaries, and social content that moves audiences.", am: "" },
       introText: { en: "From first cut to final polish, I shape raw footage into compelling narratives.", am: "" },
       primaryButtonText: { en: "View My Work", am: "" },
       primaryButtonLink: "/projects",

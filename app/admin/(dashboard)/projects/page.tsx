@@ -2,10 +2,13 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Eye, EyeOff, Star } from "lucide-react";
+import MediaUrlField from "@/components/admin/MediaUrlField";
+import { mediaLinkError, pickImage } from "@/lib/media";
 
 export default function AdminProjects() {
   const [items, setItems] = useState<any[]>([]);
   const [modal, setModal] = useState<any>(null); // null closed, object editing or {new:true}
+  const [orig, setOrig] = useState<any>({}); // original media links (legacy values may be kept untouched)
   const [saving, setSaving] = useState(false);
 
   async function load() {
@@ -14,12 +17,17 @@ export default function AdminProjects() {
   }
   useEffect(() => { load(); }, []);
 
-  function newItem() { setModal({ title: { en: "", am: "" }, description: { en: "", am: "" }, slug: "", category: "Commercial", tags: "", tools: "", client: "", projectDate: "", thumbnail: "", videoUrl: "", featured: false, published: true, order: 0 }); }
+  function newItem() { setOrig({}); setModal({ title: { en: "", am: "" }, description: { en: "", am: "" }, slug: "", category: "Commercial", tags: "", tools: "", client: "", projectDate: "", thumbnail: "", videoUrl: "", featured: false, published: true, order: 0 }); }
   function editItem(it: any) {
+    setOrig({ thumbnail: it.thumbnail || "", videoUrl: it.videoUrl || "" });
     setModal({ ...it, tags: (it.tags || []).join(", "), tools: (it.tools || []).join(", "), projectDate: it.projectDate ? it.projectDate.slice(0,10) : "" });
   }
 
   async function save() {
+    const thumbError = mediaLinkError("image", modal.thumbnail, orig.thumbnail);
+    if (thumbError) return toast.error(thumbError);
+    const videoError = mediaLinkError("video", modal.videoUrl, orig.videoUrl);
+    if (videoError) return toast.error(videoError);
     setSaving(true);
     try {
       const body = {
@@ -56,9 +64,18 @@ export default function AdminProjects() {
         <button onClick={newItem} className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[color:var(--accent)] hover:opacity-90"><Plus size={16}/>New Project</button>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {items.map(it => (
+        {items.map(it => {
+          const preview = pickImage(it.thumbnail, it.videoUrl);
+          return (
           <div key={it._id} className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface)] overflow-hidden">
-            <div className="aspect-video bg-black"><img src={it.thumbnail} alt="" className="w-full h-full object-cover"/></div>
+            <div className="aspect-video bg-black">
+              {preview ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={preview} alt="" className="w-full h-full object-cover"/>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-xs text-[color:var(--muted)]">No media</div>
+              )}
+            </div>
             <div className="p-4">
               <div className="flex items-center justify-between">
                 <div className="font-semibold">{it.title?.en}</div>
@@ -72,7 +89,8 @@ export default function AdminProjects() {
               <div className="text-xs text-[color:var(--muted)] mt-1">{it.category} · {it.client}</div>
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
 
       {modal && (
@@ -97,8 +115,22 @@ export default function AdminProjects() {
                 <Field label="Project Date" value={modal.projectDate || ""} onChange={(v: any)=>setM("projectDate", v)} type="date" />
                 <Field label="Order" value={modal.order ?? 0} onChange={(v: any)=>setM("order", Number(v))} type="number" />
               </div>
-              <Field label="Thumbnail URL" value={modal.thumbnail || ""} onChange={(v: any)=>setM("thumbnail", v)} />
-              <Field label="Video URL" value={modal.videoUrl || ""} onChange={(v: any)=>setM("videoUrl", v)} />
+              <MediaUrlField
+                label="Thumbnail / Photo"
+                kind="image"
+                value={modal.thumbnail || ""}
+                onChange={(v: string)=>setM("thumbnail", v)}
+                original={orig.thumbnail}
+                hint="Google Cloud Storage / Google Drive image link. A YouTube link also works — its video thumbnail is used as the photo."
+              />
+              <MediaUrlField
+                label="Video"
+                kind="video"
+                value={modal.videoUrl || ""}
+                onChange={(v: string)=>setM("videoUrl", v)}
+                original={orig.videoUrl}
+                hint="Paste a YouTube link (plays with the YouTube player) or a Google Cloud / Google Drive link to a video file."
+              />
               <div className="flex gap-6">
                 <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!modal.featured} onChange={(e: any)=>setM("featured", e.target.checked)}/>Featured</label>
                 <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!modal.published} onChange={(e: any)=>setM("published", e.target.checked)}/>Published</label>

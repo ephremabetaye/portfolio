@@ -6,6 +6,9 @@ import { motion } from "framer-motion";
 import { ArrowRight, Play } from "lucide-react";
 import ProjectCard from "@/components/projects/ProjectCard";
 import { useLanguage, bi } from "@/components/providers/language-provider";
+import { resolveImageUrl, resolveVideoSource } from "@/lib/media";
+import SkillIcon from "@/components/skills/SkillIcon";
+import VideoModal from "@/components/media/VideoModal";
 
 export default function HomePage() {
   const { t, lang } = useLanguage();
@@ -15,6 +18,7 @@ export default function HomePage() {
   const [skills, setSkills] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>({});
   const [loading, setLoading] = useState(true);
+  const [reelOpen, setReelOpen] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -38,6 +42,10 @@ export default function HomePage() {
 
   const heading = bi(settings?.heroHeading, lang) || t("hero.title");
   const subtitle = bi(settings?.heroSubtitle, lang) || t("hero.subtitle");
+  // Photo comes from Google Cloud/Drive (or a YouTube thumbnail as an alternative).
+  const profileImg = resolveImageUrl(profile?.image);
+  // Showreel comes from YouTube or Google Cloud/Drive.
+  const showreel = resolveVideoSource(settings?.showreelUrl);
 
   return (
     <div>
@@ -66,8 +74,8 @@ export default function HomePage() {
           <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.9, delay: 0.2 }} className="relative max-w-sm mx-auto">
             <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-[color:var(--accent)]/30 to-[color:var(--accent-2)]/20 blur-2xl" />
             <div className="relative rounded-3xl overflow-hidden border border-white/10 shadow-2xl bg-[color:var(--surface)]">
-              {profile?.image ? (
-                <img src={profile.image} alt={profile?.name} className="w-full aspect-[4/5] object-cover" />
+              {profileImg ? (
+                <img src={profileImg} alt={profile?.name} className="w-full aspect-[4/5] object-cover" />
               ) : (
                 <div className="w-full aspect-[4/5] bg-gradient-to-br from-[color:var(--surface-2)] to-black" />
               )}
@@ -75,7 +83,7 @@ export default function HomePage() {
               <div className="absolute bottom-0 inset-x-0 p-5">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-full bg-white/15 backdrop-blur border border-white/20 flex items-center justify-center overflow-hidden">
-                    {profile?.image && <img src={profile.image} alt="" className="w-full h-full object-cover" />}
+                    {profileImg && <img src={profileImg} alt="" className="w-full h-full object-cover" />}
                   </div>
                   <div>
                     <div className="font-semibold">{profile?.name || "Amanuel Bekele"}</div>
@@ -83,10 +91,16 @@ export default function HomePage() {
                   </div>
                 </div>
               </div>
-              {settings?.showreelUrl && (
-                <a href={settings.showreelUrl} target="_blank" rel="noreferrer" className="absolute top-4 right-4 w-12 h-12 rounded-full bg-black/40 backdrop-blur border border-white/20 flex items-center justify-center hover:scale-110 transition">
+              {showreel.kind !== "none" && (
+                <button
+                  type="button"
+                  onClick={() => setReelOpen(true)}
+                  title={t("hero.showreel")}
+                  aria-label={t("hero.showreel")}
+                  className="absolute top-4 right-4 w-12 h-12 rounded-full bg-black/40 backdrop-blur border border-white/20 flex items-center justify-center hover:scale-110 transition"
+                >
                   <Play size={20} fill="currentColor" />
-                </a>
+                </button>
               )}
             </div>
           </motion.div>
@@ -115,8 +129,13 @@ export default function HomePage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           {skills.map((s: any, i: number) => (
             <motion.div key={s._id} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.05 }} className="glass-card p-5 hover:-translate-y-1 transition">
-              <div className="font-semibold">{s.name}</div>
-              <div className="text-xs text-[color:var(--muted)] mt-1">{bi(s.description, lang) || s.category}</div>
+              <div className="flex items-center gap-3">
+                <SkillIcon skill={s} size={40} />
+                <div className="min-w-0">
+                  <div className="font-semibold truncate">{s.name}</div>
+                  <div className="text-xs text-[color:var(--muted)] mt-0.5 truncate">{bi(s.description, lang) || s.category}</div>
+                </div>
+              </div>
             </motion.div>
           ))}
         </div>
@@ -126,17 +145,20 @@ export default function HomePage() {
         <section className="container-x py-16">
           <h2 className="section-title mb-8">{t("home.recentPosts")}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {posts.map((p: any) => (
+            {posts.map((p: any) => {
+              const img = resolveImageUrl(p.featuredImage);
+              return (
               <Link key={p._id} href={`/blog/${p.slug}`} className="group glass-card overflow-hidden hover:-translate-y-1 transition">
                 <div className="relative aspect-video overflow-hidden bg-black">
-                  {p.featuredImage && <Image src={p.featuredImage} alt={bi(p.title, lang)} fill className="object-cover group-hover:scale-105 transition duration-500" sizes="(max-width:768px)100vw,33vw" />}
+                  {img && <Image src={img} alt={bi(p.title, lang)} fill className="object-cover group-hover:scale-105 transition duration-500" sizes="(max-width:768px)100vw,33vw" />}
                 </div>
                 <div className="p-5">
                   <div className="font-semibold">{bi(p.title, lang)}</div>
                   <div className="text-sm text-[color:var(--muted)] mt-2 line-clamp-2">{bi(p.excerpt, lang)}</div>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         </section>
       )}
@@ -146,6 +168,10 @@ export default function HomePage() {
         <p className="text-[color:var(--muted)] mt-3">{bi(settings?.contactCtaText, lang) || t("home.contactCtaSub")}</p>
         <Link href="/contact" className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-full bg-[color:var(--accent)] hover:opacity-90 transition">{t("hero.contactMe")} <ArrowRight size={16}/></Link>
       </section>
+
+      {reelOpen && settings?.showreelUrl && (
+        <VideoModal url={settings.showreelUrl} title={settings?.siteName ? `${settings.siteName} — ${t("hero.showreel")}` : t("hero.showreel")} onClose={() => setReelOpen(false)} />
+      )}
     </div>
   );
 }

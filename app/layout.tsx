@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-sans", display: "swa
 const ethiopic = Noto_Sans_Ethiopic({ subsets: ["ethiopic"], variable: "--font-eth", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Amanuel Bekele — Video Editor & Motion Designer",
+  title: "Ephrem Abtaye — Video Editor & Graphic Designer",
   description: "Portfolio of a professional video editor: commercials, music videos, cinematic edits, social content.",
 };
 

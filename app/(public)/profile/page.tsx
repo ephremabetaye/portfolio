@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Mail, MapPin, Phone, Globe, Video } from "lucide-react";
 import { useLanguage, bi } from "@/components/providers/language-provider";
+import { resolveImageUrl } from "@/lib/media";
 
 export default function ProfilePage() {
   const { t, lang } = useLanguage();
@@ -12,12 +13,14 @@ export default function ProfilePage() {
   useEffect(() => { fetch("/api/profile").then(r => r.json()).then(d => setProfile(d.data)).catch(() => {}); }, []);
   if (!profile) return <div className="container-x py-24"><div className="skeleton h-10 w-1/3" /></div>;
   const social = profile.social || {};
+  // Photo comes from Google Cloud/Drive (or a YouTube thumbnail as an alternative).
+  const photo = resolveImageUrl(profile.image);
   return (
     <div className="container-x py-16">
       <div className="grid md:grid-cols-3 gap-10">
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="md:col-span-1">
           <div className="relative mx-auto w-full max-w-sm aspect-[3/4] rounded-2xl overflow-hidden border border-white/10 bg-[color:var(--surface)] shadow-2xl">
-            {profile.image ? <Image src={profile.image} alt={profile.name} fill className="object-cover" sizes="(max-width:768px)90vw,320px" /> : null}
+            {photo ? <Image src={photo} alt={profile.name} fill className="object-cover" sizes="(max-width:768px)90vw,320px" /> : null}
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
           </div>
           <div className="mt-6 space-y-2 text-sm text-[color:var(--muted)]">

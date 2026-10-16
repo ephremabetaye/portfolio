@@ -53,3 +53,24 @@ export async function POST(req: Request) {
     return jsonError("Failed to send message", 500);
   }
 }
+
+/** Bulk action: mark every message as read. */
+export async function PUT(req: Request) {
+  const session = await getAdminSession();
+  if (!session) return jsonError("Unauthorized", 401);
+  try {
+    const body = await req.json().catch(() => ({}));
+    if (!body?.markAllRead) return jsonError("Nothing to do", 400);
+    if (isDemoMode()) {
+      const store = getDemoStore();
+      for (const m of store.messages) m.read = true;
+      persistDemoStore();
+      return jsonOk({ updated: store.messages.length });
+    }
+    await connectDB();
+    const res = await ContactMessage.updateMany({ read: false }, { $set: { read: true } });
+    return jsonOk({ updated: res.modifiedCount ?? 0 });
+  } catch (e) {
+    return jsonError("Failed to update messages", 500);
+  }
+}

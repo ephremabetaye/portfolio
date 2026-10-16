@@ -1,7 +1,8 @@
 import { connectDB } from "@/lib/mongodb";
 import { Project } from "@/models/Project";
 import { getAdminSession } from "@/lib/auth";
-import { jsonError, jsonOk, safeUrl } from "@/lib/utilities";
+import { jsonError, jsonOk } from "@/lib/utilities";
+import { enforceMediaField } from "@/lib/media";
 import { getDemoStore, isDemoMode, persistDemoStore } from "@/lib/demo-store";
 import { isValidObjectId } from "mongoose";
 
@@ -34,18 +35,29 @@ export async function PUT(req: Request, { params }: Ctx) {
   const { id } = await params;
   try {
     const body = await req.json();
-    body.thumbnail = body.thumbnail !== undefined ? safeUrl(body.thumbnail) : body.thumbnail;
-    body.videoUrl = body.videoUrl !== undefined ? safeUrl(body.videoUrl) : body.videoUrl;
     if (isDemoMode()) {
       const store = getDemoStore();
       const idx = store.projects.findIndex((p: any) => p._id === id);
       if (idx === -1) return jsonError("Not found", 404);
-      store.projects[idx] = { ...store.projects[idx], ...body, _id: id, updatedAt: new Date().toISOString() };
+      const existing = store.projects[idx];
+      // Media is link-only: images from Google Cloud/Drive (or a YouTube thumbnail),
+      // videos from YouTube or Google Cloud/Drive.
+      const imageCheck = enforceMediaField("image", body, "thumbnail", existing);
+      if (!imageCheck.ok) return jsonError(imageCheck.error, 400);
+      const videoCheck = enforceMediaField("video", body, "videoUrl", existing);
+      if (!videoCheck.ok) return jsonError(videoCheck.error, 400);
+      store.projects[idx] = { ...existing, ...body, _id: id, updatedAt: new Date().toISOString() };
       persistDemoStore();
       return jsonOk(store.projects[idx]);
     }
     if (!isValidObjectId(id)) return jsonError("Invalid id", 400);
     await connectDB();
+    const existing = await Project.findById(id).lean();
+    if (!existing) return jsonError("Not found", 404);
+    const imageCheck = enforceMediaField("image", body, "thumbnail", existing as Record<string, unknown>);
+    if (!imageCheck.ok) return jsonError(imageCheck.error, 400);
+    const videoCheck = enforceMediaField("video", body, "videoUrl", existing as Record<string, unknown>);
+    if (!videoCheck.ok) return jsonError(videoCheck.error, 400);
     const item = await Project.findByIdAndUpdate(id, body, { new: true });
     if (!item) return jsonError("Not found", 404);
     return jsonOk(item);

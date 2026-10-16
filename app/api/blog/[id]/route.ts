@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/mongodb";
 import { BlogPost } from "@/models/BlogPost";
 import { getAdminSession } from "@/lib/auth";
 import { jsonError, jsonOk } from "@/lib/utilities";
+import { enforceMediaField } from "@/lib/media";
 import { getDemoStore, isDemoMode, persistDemoStore } from "@/lib/demo-store";
 import { isValidObjectId } from "mongoose";
 
@@ -39,6 +40,9 @@ export async function PUT(req: Request, { params }: Ctx) {
       const idx = store.posts.findIndex((p: any) => p._id === id);
       if (idx === -1) return jsonError("Not found", 404);
       const existing = store.posts[idx];
+      // Featured images are link-only: Google Cloud/Drive links, or a YouTube thumbnail.
+      const imageCheck = enforceMediaField("image", body, "featuredImage", existing);
+      if (!imageCheck.ok) return jsonError(imageCheck.error, 400);
       const publishedAt = body.published === true && !existing.publishedAt ? new Date().toISOString() : existing.publishedAt;
       store.posts[idx] = { ...existing, ...body, publishedAt, _id: id };
       persistDemoStore();
@@ -46,10 +50,11 @@ export async function PUT(req: Request, { params }: Ctx) {
     }
     if (!isValidObjectId(id)) return jsonError("Invalid id", 400);
     await connectDB();
-    if (body.published === true) {
-      const existing = await BlogPost.findById(id).lean();
-      if (existing && !existing.publishedAt) body.publishedAt = new Date();
-    }
+    const existing = await BlogPost.findById(id).lean();
+    if (!existing) return jsonError("Not found", 404);
+    const imageCheck = enforceMediaField("image", body, "featuredImage", existing as Record<string, unknown>);
+    if (!imageCheck.ok) return jsonError(imageCheck.error, 400);
+    if (body.published === true && !existing.publishedAt) body.publishedAt = new Date();
     const item = await BlogPost.findByIdAndUpdate(id, body, { new: true });
     if (!item) return jsonError("Not found", 404);
     return jsonOk(item);

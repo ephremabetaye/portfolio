@@ -7,7 +7,8 @@ const SkillSchema = new mongoose.Schema({
   category: { type: String, default: "Editing" },
   description: { type: LangText, default: {} },
   proficiency: { type: Number, min: 0, max: 100, default: 0 },
-  icon: { type: String, default: "" },
+  icon: { type: String, default: "" }, // image/logo link (Google Cloud, Drive, or YouTube thumbnail)
+  iconName: { type: String, default: "" }, // name of a built-in icon from lib/skill-icons
   order: { type: Number, default: 0 },
 }, { timestamps: true });
 

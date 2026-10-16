@@ -2,10 +2,13 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Eye, EyeOff } from "lucide-react";
+import MediaUrlField from "@/components/admin/MediaUrlField";
+import { mediaLinkError } from "@/lib/media";
 
 export default function AdminBlog() {
   const [items, setItems] = useState<any[]>([]);
   const [modal, setModal] = useState<any>(null);
+  const [orig, setOrig] = useState<any>({}); // original media links (legacy values may be kept untouched)
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<"en" | "am">("en");
 
@@ -15,12 +18,15 @@ export default function AdminBlog() {
   }
   useEffect(() => { load(); }, []);
 
-  function newItem() { setModal({ title: { en: "", am: "" }, excerpt: { en: "", am: "" }, content: { en: "", am: "" }, slug: "", featuredImage: "", author: "Amanuel Bekele", categories: "", tags: "", published: false }); }
+  function newItem() { setOrig({}); setModal({ title: { en: "", am: "" }, excerpt: { en: "", am: "" }, content: { en: "", am: "" }, slug: "", featuredImage: "", author: "Amanuel Bekele", categories: "", tags: "", published: false }); }
   function editItem(it: any) {
+    setOrig({ featuredImage: it.featuredImage || "" });
     setModal({ ...it, categories: (it.categories || []).join(", "), tags: (it.tags || []).join(", ") });
   }
 
   async function save() {
+    const imgError = mediaLinkError("image", modal.featuredImage, orig.featuredImage);
+    if (imgError) return toast.error(imgError);
     setSaving(true);
     try {
       const body = {
@@ -84,7 +90,14 @@ export default function AdminBlog() {
                 <>
                   <Field label="Title (EN)" value={modal.title?.en || ""} onChange={(v: any)=>setM("title", { ...modal.title, en: v })} />
                   <Field label="Slug" value={modal.slug || ""} onChange={(v: any)=>setM("slug", v)} />
-                  <Field label="Featured Image URL" value={modal.featuredImage || ""} onChange={(v: any)=>setM("featuredImage", v)} />
+                  <MediaUrlField
+                    label="Featured Image (link)"
+                    kind="image"
+                    value={modal.featuredImage || ""}
+                    onChange={(v: string)=>setM("featuredImage", v)}
+                    original={orig.featuredImage}
+                    hint="Google Cloud Storage / Google Drive image link. A YouTube link also works — its video thumbnail is used as the image."
+                  />
                   <Field label="Author" value={modal.author || ""} onChange={(v: any)=>setM("author", v)} />
                   <Field label="Categories (comma)" value={modal.categories || ""} onChange={(v: any)=>setM("categories", v)} />
                   <Field label="Tags (comma)" value={modal.tags || ""} onChange={(v: any)=>setM("tags", v)} />

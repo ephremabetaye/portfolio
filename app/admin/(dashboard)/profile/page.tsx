@@ -2,20 +2,28 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Save } from "lucide-react";
+import MediaUrlField from "@/components/admin/MediaUrlField";
+import { mediaLinkError } from "@/lib/media";
 
 type ProfileState = any;
 
 export default function AdminProfile() {
   const [p, setP] = useState<ProfileState>({});
+  const [orig, setOrig] = useState<any>({}); // original media links (legacy values may be kept untouched)
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    fetch("/api/profile").then(r => r.json()).then(d => setP(d.data || {})).catch(()=>{});
+    fetch("/api/profile").then(r => r.json()).then(d => {
+      setP(d.data || {});
+      setOrig({ image: d.data?.image || "" });
+    }).catch(()=>{});
   }, []);
 
   function set<K extends string>(k: K, v: any) { setP((prev: any) => ({ ...prev, [k]: v })); }
 
   async function save() {
+    const imgError = mediaLinkError("image", p.image, orig.image);
+    if (imgError) return toast.error(imgError);
     setSaving(true);
     try {
       const payload = {
@@ -46,7 +54,15 @@ export default function AdminProfile() {
             <Input label="Contact Email" value={p.contactEmail || ""} onChange={(v: any)=>set("contactEmail",v)} />
             <Input label="Phone" value={p.phone || ""} onChange={(v: any)=>set("phone",v)} />
             <Input label="Location" value={p.location || ""} onChange={(v: any)=>set("location",v)} />
-            <Input label="Image URL" value={p.image || ""} onChange={(v: any)=>set("image",v)} full />
+            <MediaUrlField
+              label="Profile Photo (link)"
+              kind="image"
+              value={p.image || ""}
+              onChange={(v: string)=>set("image",v)}
+              original={orig.image}
+              hint="Google Cloud Storage / Google Drive image link. A YouTube link also works — its video thumbnail is used as the photo."
+              full
+            />
             <Input label="Resume URL" value={p.resumeUrl || ""} onChange={(v: any)=>set("resumeUrl",v)} full />
           </Grid>
         </Section>

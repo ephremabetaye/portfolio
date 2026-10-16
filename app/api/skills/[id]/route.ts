@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/mongodb";
 import { Skill } from "@/models/Skill";
 import { getAdminSession } from "@/lib/auth";
 import { jsonError, jsonOk } from "@/lib/utilities";
+import { enforceMediaField } from "@/lib/media";
 import { getDemoStore, isDemoMode, persistDemoStore } from "@/lib/demo-store";
 import { isValidObjectId } from "mongoose";
 
@@ -17,12 +18,19 @@ export async function PUT(req: Request, { params }: Ctx) {
       const store = getDemoStore();
       const idx = store.skills.findIndex((s: any) => s._id === id);
       if (idx === -1) return jsonError("Not found", 404);
-      store.skills[idx] = { ...store.skills[idx], ...body, _id: id };
+      const existing = store.skills[idx];
+      const iconCheck = enforceMediaField("image", body, "icon", existing);
+      if (!iconCheck.ok) return jsonError(iconCheck.error, 400);
+      store.skills[idx] = { ...existing, ...body, _id: id };
       persistDemoStore();
       return jsonOk(store.skills[idx]);
     }
     if (!isValidObjectId(id)) return jsonError("Invalid id", 400);
     await connectDB();
+    const existing = await Skill.findById(id).lean();
+    if (!existing) return jsonError("Not found", 404);
+    const iconCheck = enforceMediaField("image", body, "icon", existing as Record<string, unknown>);
+    if (!iconCheck.ok) return jsonError(iconCheck.error, 400);
     const item = await Skill.findByIdAndUpdate(id, body, { new: true });
     if (!item) return jsonError("Not found", 404);
     return jsonOk(item);

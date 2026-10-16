@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/mongodb";
 import { Skill } from "@/models/Skill";
 import { getAdminSession } from "@/lib/auth";
 import { jsonError, jsonOk } from "@/lib/utilities";
+import { enforceMediaField } from "@/lib/media";
 import { getDemoStore, isDemoMode, nextDemoId, persistDemoStore } from "@/lib/demo-store";
 
 export async function GET() {
@@ -20,6 +21,9 @@ export async function POST(req: Request) {
   if (!session) return jsonError("Unauthorized", 401);
   try {
     const body = await req.json();
+    // Skill icons, when set, must be a Google Cloud / Drive / YouTube-thumbnail link.
+    const iconCheck = enforceMediaField("image", body, "icon");
+    if (!iconCheck.ok) return jsonError(iconCheck.error, 400);
     if (isDemoMode()) {
       const store = getDemoStore();
       const item = { ...body, _id: nextDemoId("s") };

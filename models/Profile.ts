@@ -4,7 +4,7 @@ const LangText = new mongoose.Schema({ en: { type: String, default: "" }, am: { 
 
 const ProfileSchema = new mongoose.Schema({
   name: { type: String, default: "Amanuel Bekele" },
-  title: { type: String, default: "Video Editor & Motion Designer" },
+  title: { type: String, default: "Video Editor & Graphic Designer" },
   bio: { type: LangText, default: { en: "", am: "" } },
   image: { type: String, default: "" },
   resumeUrl: { type: String, default: "" },
