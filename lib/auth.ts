@@ -127,10 +127,17 @@ export function isAdminConfigured() {
 
 /** Safe, secret-free status for the deployment health check. */
 export function getAdminConfigStatus() {
+  const hash = getAdminPasswordHash();
+  const email = getAdminEmail();
+  const [localPart, domain] = email.split("@");
   return {
-    emailConfigured: !!getAdminEmail(),
+    emailConfigured: !!email,
+    emailHint: localPart ? `${localPart.slice(0, 2)}***@${domain || ""}` : "",
     passwordHashConfigured: !!envValue("ADMIN_PASSWORD_HASH"),
     passwordHashValid: isAdminHashValid(),
+    // Only the bcrypt version/cost + start of the salt. Useful to confirm
+    // which hash is deployed without exposing the full hash.
+    passwordHashFingerprint: hash ? hash.slice(0, 18) : "",
     plainPasswordConfigured: !!getAdminPlainPassword(),
     sessionSecretConfigured: !!envValue("SESSION_SECRET"),
     configured: isAdminConfigured(),
