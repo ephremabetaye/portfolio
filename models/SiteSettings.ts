@@ -31,6 +31,7 @@ const SiteSettingsSchema = new mongoose.Schema({
     type: new mongoose.Schema({
       serviceId: { type: String, default: "" },
       templateId: { type: String, default: "" },
+      autoReplyTemplateId: { type: String, default: "" },
       publicKey: { type: String, default: "" },
       toEmail: { type: String, default: "" },
     }, { _id: false }),

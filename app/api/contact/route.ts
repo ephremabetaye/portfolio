@@ -3,6 +3,7 @@ import { ContactMessage } from "@/models/ContactMessage";
 import { getAdminSession } from "@/lib/auth";
 import { jsonError, jsonOk, rateLimit, getClientIp } from "@/lib/utilities";
 import { getDemoStore, isDemoMode, nextDemoId, persistDemoStore } from "@/lib/demo-store";
+import { getEmailjsConfig, isEmailjsConfigured, sendAutoReply, sendOwnerNotification } from "@/lib/email";
 
 export async function GET(req: Request) {
   const session = await getAdminSession();
@@ -36,19 +37,49 @@ export async function POST(req: Request) {
     const email = String(body?.email || "").trim();
     const subject = String(body?.subject || "").trim();
     const message = String(body?.message || "").trim();
+    const lang = body?.lang === "am" ? "am" : "en";
     if (!name || !email || !message) return jsonError("Name, email, and message are required", 400);
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return jsonError("Invalid email", 400);
     if (message.length > 5000) return jsonError("Message too long", 400);
+
+    // 1) Always store the message first — it shows up in Admin → Messages.
+    let doc: any;
     if (isDemoMode()) {
       const store = getDemoStore();
-      const doc = { _id: nextDemoId("m"), name, email, subject, message, read: false, createdAt: new Date().toISOString() };
+      doc = { _id: nextDemoId("m"), name, email, subject, message, read: false, notified: false, autoReplySent: false, replies: [], createdAt: new Date().toISOString() };
       store.messages.unshift(doc);
       persistDemoStore();
-      return jsonOk(doc, 201);
+    } else {
+      await connectDB();
+      doc = await ContactMessage.create({ name, email, subject, message });
     }
-    await connectDB();
-    const doc = await ContactMessage.create({ name, email, subject, message });
-    return jsonOk(doc, 201);
+
+    // 2) Email from the server: a notification to the site owner and an
+    //    automatic reply to the sender's own email address. Failures are
+    //    reported in the response but never lose the stored message.
+    const config = await getEmailjsConfig();
+    const status = { configured: isEmailjsConfigured(config), notified: false, autoReplied: false, error: "" };
+    if (status.configured) {
+      const target = { name, email, subject, message };
+      // Send one after another: two simultaneous sends through the same
+      // Gmail-backed EmailJS service can fail with transient API errors.
+      const notifyResult = await sendOwnerNotification(config, req, target);
+      const autoReplyResult = await sendAutoReply(config, req, target, lang);
+      status.notified = notifyResult.sent;
+      status.autoReplied = autoReplyResult.sent;
+      status.error = autoReplyResult.error || notifyResult.error || "";
+      if (isDemoMode()) {
+        doc.notified = status.notified;
+        doc.autoReplySent = status.autoReplied;
+        persistDemoStore();
+      } else {
+        await ContactMessage.findByIdAndUpdate(doc._id, {
+          $set: { notified: status.notified, autoReplySent: status.autoReplied },
+        }).catch(() => {});
+      }
+    }
+
+    return jsonOk({ message: doc, email: status }, 201);
   } catch (e) {
     return jsonError("Failed to send message", 500);
   }

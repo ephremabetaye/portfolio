@@ -119,18 +119,25 @@ export default function AdminSettings() {
           </Grid>
         </Section>
 
-        <Section title="EmailJS (contact form email)">
+        <Section title="EmailJS (contact form email + auto-reply)">
           <p className="text-xs text-[color:var(--muted)] leading-relaxed">
-            Every contact message is always saved in <b>Admin → Messages</b>. To also receive it by email, create a free account at
-            emailjs.com, add an email service and a template (template variables: {"{{from_name}}"}, {"{{from_email}}"}, {"{{reply_to}}"}, {"{{subject}}"}, {"{{message}}"}, {"{{to_email}}"}),
-            then paste the IDs below.
+            Every contact message is always saved in <b>Admin → Messages</b>. When EmailJS is configured below, the site also sends
+            <b> two emails from the server</b>: a notification to you and an <b>automatic reply to the sender&apos;s own address</b>.
+            The main template variables are {"{{from_name}}"}, {"{{from_email}}"}, {"{{reply_to}}"}, {"{{subject}}"}, {"{{message}}"}, {"{{to_email}}"}.
           </p>
           <Grid>
             <Input label="Service ID" value={s.emailjs?.serviceId || ""} onChange={(v: any)=>set("emailjs", { ...s.emailjs, serviceId: v })} />
-            <Input label="Template ID" value={s.emailjs?.templateId || ""} onChange={(v: any)=>set("emailjs", { ...s.emailjs, templateId: v })} />
             <Input label="Public Key" value={s.emailjs?.publicKey || ""} onChange={(v: any)=>set("emailjs", { ...s.emailjs, publicKey: v })} />
-            <Input label="Send To Email" value={s.emailjs?.toEmail || ""} onChange={(v: any)=>set("emailjs", { ...s.emailjs, toEmail: v })} />
+            <Input label="Notification Template ID" value={s.emailjs?.templateId || ""} onChange={(v: any)=>set("emailjs", { ...s.emailjs, templateId: v })} />
+            <Input label="Send To Email (your inbox)" value={s.emailjs?.toEmail || ""} onChange={(v: any)=>set("emailjs", { ...s.emailjs, toEmail: v })} />
+            <Input label="Auto-Reply Template ID (optional)" value={s.emailjs?.autoReplyTemplateId || ""} onChange={(v: any)=>set("emailjs", { ...s.emailjs, autoReplyTemplateId: v })} full />
           </Grid>
+          <p className="text-xs text-[color:var(--muted)] leading-relaxed">
+            The auto-reply template is used for the automatic confirmation sent to the visitor and for replies you send from
+            <b> Admin → Messages</b>. Its &quot;To Email&quot; must be {"{{to_email}}"} (you can also use {"{{to_name}}"}, {"{{subject}}"}, {"{{message}}"}, {"{{original_message}}"}, {"{{site_name}}"}).
+            Leave it empty to reuse the notification template for auto-replies. Emails are sent from the server — if your EmailJS
+            account uses strict mode, add your private key as <b>EMAILJS_PRIVATE_KEY</b> in <b>.env</b>.
+          </p>
         </Section>
 
         <button onClick={save} disabled={saving} className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[color:var(--accent)] hover:opacity-90 disabled:opacity-50">

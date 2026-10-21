@@ -2,9 +2,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { Mail, Phone, MapPin, CircleCheck, Send } from "lucide-react";
-import emailjs from "@emailjs/browser";
 import { toast } from "sonner";
-import { useLanguage, bi } from "@/components/providers/language-provider";
+import { useLanguage } from "@/components/providers/language-provider";
 
 const EMPTY_FORM = { name: "", email: "", subject: "", message: "" };
 
@@ -15,21 +14,13 @@ export default function ContactPage() {
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState<null | "email" | "saved" | "emailFailed">(null);
+  const [sentTo, setSentTo] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     fetch("/api/profile").then(r => r.json()).then(d => setProfile(d.data)).catch(() => {});
     fetch("/api/settings").then(r => r.json()).then(d => setSettings(d.data || {})).catch(() => {});
   }, []);
-
-  // EmailJS config: set in Admin → Settings, or via NEXT_PUBLIC_EMAILJS_* env vars.
-  const emailjsConfig = {
-    serviceId: settings?.emailjs?.serviceId || process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || "",
-    templateId: settings?.emailjs?.templateId || process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || "",
-    publicKey: settings?.emailjs?.publicKey || process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || "",
-  };
-  const emailjsReady = !!(emailjsConfig.serviceId && emailjsConfig.templateId && emailjsConfig.publicKey);
-  const toEmail = settings?.emailjs?.toEmail || settings?.contactEmail || profile?.contactEmail || "";
 
   function validate() {
     const e: Record<string, string> = {};
@@ -44,40 +35,34 @@ export default function ContactPage() {
     e.preventDefault();
     if (!validate()) return;
     setLoading(true);
+    const userEmail = form.email.trim();
     try {
-      // 1) Always store the message first — it shows up in Admin → Messages.
-      const r = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(form) });
+      // The server saves the message (Admin → Messages), notifies the site
+      // owner and sends an automatic reply to the sender's own email address.
+      const r = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, lang }),
+      });
       const d = await r.json();
       if (!(r.ok && d.success)) {
         toast.error(d.error || t("contact.errorMsg"));
         return;
       }
 
-      const params = {
-        from_name: form.name,
-        from_email: form.email,
-        reply_to: form.email,
-        subject: form.subject || `New message from ${form.name}`,
-        message: form.message,
-        to_email: toEmail,
-        site_name: settings?.siteName || "Portfolio",
-      };
       setForm({ ...EMPTY_FORM });
-
-      // 2) Email it through EmailJS (if configured). Failure never loses the message.
-      if (emailjsReady) {
-        try {
-          await emailjs.send(emailjsConfig.serviceId, emailjsConfig.templateId, params, { publicKey: emailjsConfig.publicKey });
-          setSent("email");
-          toast.success(t("contact.emailReady"));
-        } catch (err) {
-          console.error("EmailJS send failed", err);
-          setSent("emailFailed");
-          toast.warning(t("contact.emailFailed"));
-        }
-      } else {
+      const emailStatus = d.data?.email || {};
+      if (!emailStatus.configured) {
         setSent("saved");
         toast.success(t("contact.emailSkipped"));
+      } else if (emailStatus.autoReplied) {
+        setSentTo(userEmail);
+        setSent("email");
+        toast.success(t("contact.emailReady"));
+      } else {
+        setSentTo(userEmail);
+        setSent("emailFailed");
+        toast.warning(t("contact.emailFailed"));
       }
     } catch {
       toast.error(t("contact.errorMsg"));
@@ -119,8 +104,13 @@ export default function ContactPage() {
             <p className="text-[color:var(--muted)] mt-2 max-w-md">
               {sent === "email" ? t("contact.emailReady") : sent === "emailFailed" ? t("contact.emailFailed") : t("contact.emailSkipped")}
             </p>
+            {sent === "email" && sentTo && (
+              <p className="text-sm mt-2 text-[color:var(--muted)]">
+                {t("contact.autoReplyTo")} <span className="text-white font-medium break-all">{sentTo}</span>
+              </p>
+            )}
             <button
-              onClick={() => setSent(null)}
+              onClick={() => { setSent(null); setSentTo(""); }}
               className="inline-flex items-center gap-2 mt-6 px-6 py-3 rounded-full border border-[color:var(--border)] hover:bg-white/10 transition"
             >
               <Send size={16} /> {t("contact.another")}
