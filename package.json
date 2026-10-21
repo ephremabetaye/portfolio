@@ -10,7 +10,8 @@
     "seed": "tsx scripts/seed.ts",
     "import:data": "tsx scripts/import-demo-store.ts",
     "hash:admin": "tsx scripts/generate-admin-password-hash.ts",
-    "verify:admin": "tsx scripts/verify-admin-password.ts"
+    "verify:admin": "tsx scripts/verify-admin-password.ts",
+    "verify:db": "tsx scripts/verify-db.ts"
   },
   "dependencies": {
     "@emailjs/browser": "^5.0.3",
