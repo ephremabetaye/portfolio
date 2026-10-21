@@ -1,5 +1,6 @@
 import { getDemoStore, isDemoMode } from "./demo-store";
 import { connectDB } from "./mongodb";
+import { getSiteUrl } from "./env";
 import { SiteSettings } from "@/models/SiteSettings";
 
 const EMAILJS_API = "https://api.emailjs.com/api/v1.0/email/send";
@@ -64,7 +65,7 @@ export function isEmailjsConfigured(config: EmailjsConfig) {
  * with just the public key (a private key can still be set via EMAILJS_PRIVATE_KEY).
  */
 function siteOrigin(req?: Request) {
-  const origin = req?.headers.get("origin") || process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+  const origin = req?.headers.get("origin") || getSiteUrl();
   return origin.replace(/\/+$/, "");
 }
 

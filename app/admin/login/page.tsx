@@ -54,6 +54,12 @@ export default function AdminLoginPage() {
             {loading ? <Loader2 size={18} className="animate-spin"/> : null} Sign In
           </button>
         </form>
+        <p className="text-center text-xs text-[color:var(--muted)] mt-5">
+          Deployment check:{" "}
+          <a href="/api/health" target="_blank" rel="noreferrer" className="underline hover:text-white">
+            /api/health
+          </a>
+        </p>
       </div>
     </div>
   );

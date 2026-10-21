@@ -1,5 +1,3 @@
-import { z } from "zod";
-
 export function slugify(input: string) {
   return input
     .toLowerCase()
@@ -25,13 +23,6 @@ export function readingTime(text: string) {
   const words = text.split(/\s+/).filter(Boolean).length;
   return Math.max(1, Math.round(words / 200));
 }
-
-export const LangTextSchema = z.object({
-  en: z.string().optional().default(""),
-  am: z.string().optional().default(""),
-});
-
-export const IdSchema = z.string().regex(/^[a-fA-F0-9]{24}$/);
 
 export function jsonError(message: string, status = 400) {
   return Response.json({ success: false, error: message }, { status });

@@ -4,6 +4,7 @@ import { getAdminSession } from "@/lib/auth";
 import { jsonError, jsonOk, rateLimit, getClientIp } from "@/lib/utilities";
 import { getDemoStore, isDemoMode, nextDemoId, persistDemoStore } from "@/lib/demo-store";
 import { getEmailjsConfig, isEmailjsConfigured, sendAutoReply, sendOwnerNotification } from "@/lib/email";
+import { getMongoUri } from "@/lib/env";
 
 export async function GET(req: Request) {
   const session = await getAdminSession();
@@ -31,6 +32,14 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   const ip = getClientIp(req);
   if (!rateLimit(`contact:${ip}`, 10, 60_000)) return jsonError("Too many requests", 429);
+  // In production the demo store is intentionally disabled, so a missing
+  // database would otherwise surface only as a generic "Failed to send message".
+  if (!isDemoMode() && !getMongoUri()) {
+    return jsonError(
+      "Contact form is not connected to a database on this deployment. Add MONGODB_URI in Vercel → Project → Settings → Environment Variables and redeploy.",
+      503
+    );
+  }
   try {
     const body = await req.json();
     const name = String(body?.name || "").trim();
@@ -81,7 +90,8 @@ export async function POST(req: Request) {
 
     return jsonOk({ message: doc, email: status }, 201);
   } catch (e) {
-    return jsonError("Failed to send message", 500);
+    console.error("Contact form error:", e);
+    return jsonError("Failed to send message. The database connection failed; check MONGODB_URI and MongoDB Atlas network access.", 500);
   }
 }
 

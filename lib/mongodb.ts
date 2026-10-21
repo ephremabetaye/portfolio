@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { getMongoUri } from "@/lib/env";
 
 type Cached = { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null };
 const globalAny = global as unknown as { __mongooseCached?: Cached };
@@ -10,11 +11,22 @@ const cached = globalAny.__mongooseCached!;
 
 export async function connectDB() {
   if (cached.conn) return cached.conn;
-  if (!process.env.MONGODB_URI) {
-    throw new Error("MONGODB_URI is not configured");
+
+  const uri = getMongoUri();
+  if (!uri) {
+    throw new Error(
+      "MONGODB_URI is not configured. Add it in Vercel → Project → Settings → Environment Variables (MongoDB Atlas connection string) and redeploy."
+    );
   }
+
   if (!cached.promise) {
-    cached.promise = mongoose.connect(process.env.MONGODB_URI, { bufferCommands: false }).then((m) => m);
+    cached.promise = mongoose
+      .connect(uri, {
+        bufferCommands: false,
+        serverSelectionTimeoutMS: 8000,
+        connectTimeoutMS: 8000,
+      })
+      .then((m) => m);
   }
   try {
     cached.conn = await cached.promise;
@@ -26,5 +38,5 @@ export async function connectDB() {
 }
 
 export function isDBConfigured() {
-  return !!process.env.MONGODB_URI;
+  return !!getMongoUri();
 }

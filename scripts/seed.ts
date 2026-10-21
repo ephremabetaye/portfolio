@@ -1,10 +1,14 @@
-import "dotenv/config";
+import dotenv from "dotenv";
 import { connectDB } from "../lib/mongodb";
 import { Profile } from "../models/Profile";
 import { SiteSettings } from "../models/SiteSettings";
 import { Project } from "../models/Project";
 import { Skill } from "../models/Skill";
 import { BlogPost } from "../models/BlogPost";
+
+// Load .env.local first (Next.js convention), then .env.
+dotenv.config({ path: ".env.local" });
+dotenv.config();
 
 async function run() {
   await connectDB();
